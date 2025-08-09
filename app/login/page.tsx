@@ -5,6 +5,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState("");

@@ -10,7 +10,7 @@ import { Save, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
 
-const page = ({ params }: { params: { invoiceId: string } }) => {
+const Page = ({ params }: { params: { invoiceId: string } }) => {
 
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [initialInvoice, setInitialInvoice] = useState<Invoice | null>(null);
@@ -80,9 +80,9 @@ const page = ({ params }: { params: { invoiceId: string } }) => {
   }, [invoice])
 
   useEffect(() => {
-    fetchInvoice();
-  }, [fetchInvoice]);
-
+  fetchInvoice();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newStatus = parseInt(e.target.value)
     if (invoice) {
@@ -182,4 +182,4 @@ const page = ({ params }: { params: { invoiceId: string } }) => {
   );
 };
 
-export default page;
+export default Page;

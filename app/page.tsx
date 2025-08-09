@@ -90,7 +90,7 @@ export default function Home() {
           {invoices.length > 0 &&
             invoices.map((invoice, index) => (
               <div key={index}>
-                <InvoiceComponent invoice={invoice} _index={index} />
+                <InvoiceComponent invoice={invoice}  />
               </div>
             ))}
         </div>
@@ -115,7 +115,7 @@ export default function Home() {
 
             {!isNameValid && (
               <p className="mb-4 text-sm text-red-500">
-               Le nom ne peut pas d&apos;épaser 60 caractères
+               Le nom ne peut pas d&eacute;passer 60 caract&egrave;res.
               </p>
             )}
 

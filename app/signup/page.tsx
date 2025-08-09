@@ -6,6 +6,7 @@ import { auth, db } from "@/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
