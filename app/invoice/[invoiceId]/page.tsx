@@ -11,11 +11,15 @@ import { Save, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function Page(props: any) {
-  // On récupère params sans typer strictement
-  const { params } = props;
-  const invoiceId: string = params.invoiceId;
+// Définition précise des props attendues
+interface PageProps {
+  params: {
+    invoiceId: string;
+  };
+}
+
+export default function Page({ params }: PageProps) {
+  const invoiceId = params.invoiceId;
 
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [initialInvoice, setInitialInvoice] = useState<Invoice | null>(null);
