@@ -11,13 +11,8 @@ import { Save, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
 
-interface PageProps {
-  params: {
-    invoiceId: string;
-  };
-}
-
-export default function Page({ params }: PageProps) {
+// ⚠️ On supprime notre type PageProps et on tape juste `any` pour éviter le conflit
+export default function Page({ params }: { params: { invoiceId: string } }) {
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [initialInvoice, setInitialInvoice] = useState<Invoice | null>(null);
   const [totals, setTotals] = useState<Totals | null>(null);
