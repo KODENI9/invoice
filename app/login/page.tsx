@@ -62,7 +62,7 @@ export default function Login() {
           <p className="mt-3 text-center text-sm">
             Pas encore de compte ?{" "}
             <a href="/signup" className="link link-primary">
-              S'inscrire
+              S inscrire
             </a>
           </p>
         </div>

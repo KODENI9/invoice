@@ -75,7 +75,7 @@ export default function SignUp() {
 
           <div className="form-control mt-4">
             <button onClick={handleSignUp} className="btn btn-accent">
-              S'inscrire
+              S inscrire
             </button>
           </div>
 
