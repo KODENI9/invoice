@@ -11,6 +11,7 @@ import { Save, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function Page(props: any) {
   // On récupère params sans typer strictement
   const { params } = props;
