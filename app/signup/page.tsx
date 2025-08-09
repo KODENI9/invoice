@@ -5,6 +5,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
+import { FirebaseError } from "firebase/app";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function SignUp() {
@@ -13,20 +14,25 @@ export default function SignUp() {
   const [name, setName] = useState("");
   const router = useRouter();
 
-  const handleSignUp = async () => {
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await setDoc(doc(db, "users", userCredential.user.uid), {
-        name,
-        email,
-      });
-      alert("Compte créé !");
-      router.push("/login");
-    } catch (error) {
-      console.error(error);
-      alert("Erreur : " + (error as any).message);
+
+const handleSignUp = async () => {
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    await setDoc(doc(db, "users", userCredential.user.uid), {
+      name,
+      email,
+    });
+    alert("Compte créé !");
+    router.push("/login");
+  } catch (error) {
+    if (error instanceof FirebaseError) {
+      alert("Erreur : " + error.message);
+    } else {
+      alert("Erreur inconnue");
     }
-  };
+    console.error(error);
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-base-200">

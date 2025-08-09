@@ -1,8 +1,7 @@
 import { Layers } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation'
-import path from 'path'
-import React, { use } from 'react'
+import React from 'react'
 import UserButton from './UserButton';
 
 const Navbar = () => {

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
+import { FirebaseError } from "firebase/app";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function Login() {
@@ -11,15 +12,19 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = async () => {
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      router.push("/");
-    } catch (error) {
-      console.error(error);
-      alert("Erreur : " + (error as any).message);
+const handleLogin = async () => {
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    router.push("/");
+  } catch (error) {
+    if (error instanceof FirebaseError) {
+      alert("Erreur : " + error.message);
+    } else {
+      alert("Erreur inconnue");
     }
-  };
+    console.error(error);
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-base-200">
