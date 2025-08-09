@@ -10,18 +10,23 @@ import { Save, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
 
-const Page = ({ params }: { params: { invoiceId: string } }) => {
+type PageProps = {
+  params: {
+    invoiceId: string;
+  };
+};
 
+const Page = ({ params }: PageProps) => {
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [initialInvoice, setInitialInvoice] = useState<Invoice | null>(null);
   const [totals, setTotals] = useState<Totals | null>(null);
   const [isSaveDisabled, setIsSaveDisabled] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  
+
   const fetchInvoice = useCallback(async () => {
     try {
-      const { invoiceId } = await params;
+      const { invoiceId } = params; // ✅ plus de await
       const fetchedInvoice = await getInvoiceById(invoiceId);
       if (fetchedInvoice) {
         setInvoice(fetchedInvoice);
@@ -30,67 +35,66 @@ const Page = ({ params }: { params: { invoiceId: string } }) => {
     } catch (error) {
       console.error(error);
     }
-  }, []);
+  }, [params]); // ✅ ajout de params comme dépendance
 
-
-    useEffect(() => {
+  useEffect(() => {
     setIsSaveDisabled(
       JSON.stringify(invoice) === JSON.stringify(initialInvoice)
-    )
-  }, [invoice, initialInvoice])
+    );
+  }, [invoice, initialInvoice]);
 
-
-    const handleSave = async () => {
+  const handleSave = async () => {
     if (!invoice) return;
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      await updateInvoice(invoice)
-      const updatedInvoice = await getInvoiceById(invoice.id)
+      await updateInvoice(invoice);
+      const updatedInvoice = await getInvoiceById(invoice.id);
       if (updatedInvoice) {
-        setInvoice(updatedInvoice)
-        setInitialInvoice(updatedInvoice)
+        setInvoice(updatedInvoice);
+        setInitialInvoice(updatedInvoice);
       }
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (error) {
       console.error("Erreur lors de la sauvegarde de la facture :", error);
     }
-  }
-  
-    const handleDelete = async () => {
-    const confirmed = window.confirm("Êtes-vous sûr de vouloir supprimer cette facture ?")
+  };
+
+  const handleDelete = async () => {
+    const confirmed = window.confirm(
+      "Êtes-vous sûr de vouloir supprimer cette facture ?"
+    );
 
     if (confirmed) {
       try {
-        await deleteInvoice(invoice?.id as string)
-        router.push("/")
+        await deleteInvoice(invoice?.id as string);
+        router.push("/");
       } catch (error) {
         console.error("Erreur lors de la suppression de la facture.", error);
       }
     }
-  }
+  };
 
   useEffect(() => {
     if (!invoice) return;
-    const ht = invoice.lines.reduce((acc, { quantity, unitPrice }) =>
-      acc + quantity * unitPrice, 0
-    )
-    const vat = invoice.vatActive ? ht * (invoice.vatRate / 100) : 0
-    setTotals({ totalHT: ht, totalVAT: vat, totalTTC: ht + vat })
-
-  }, [invoice])
+    const ht = invoice.lines.reduce(
+      (acc, { quantity, unitPrice }) => acc + quantity * unitPrice,
+      0
+    );
+    const vat = invoice.vatActive ? ht * (invoice.vatRate / 100) : 0;
+    setTotals({ totalHT: ht, totalVAT: vat, totalTTC: ht + vat });
+  }, [invoice]);
 
   useEffect(() => {
-  fetchInvoice();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
-  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newStatus = parseInt(e.target.value)
-    if (invoice) {
-      const updatedInvoice = { ...invoice, status: newStatus }
-      setInvoice(updatedInvoice)
-    }
-  }
+    fetchInvoice();
+  }, [fetchInvoice]); // ✅ pas besoin de désactiver eslint maintenant
 
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newStatus = parseInt(e.target.value);
+    if (invoice) {
+      const updatedInvoice = { ...invoice, status: newStatus };
+      setInvoice(updatedInvoice);
+    }
+  };
 
   if (!invoice || !totals)
     return (
@@ -98,7 +102,7 @@ const Page = ({ params }: { params: { invoiceId: string } }) => {
         <span className="font-bold">Facture Non Trouvée</span>
       </div>
     );
-
+    
   return (
     <Wrapper>
       <div>
