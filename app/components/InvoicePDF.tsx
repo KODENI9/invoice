@@ -106,7 +106,7 @@ const InvoicePDF: React.FC<FacturePDFProps> = ({ invoice, totals }) => {
                 {formatDate(invoice.invoiceDate)}
               </p>
               <p>
-                <strong>Date d'échéance </strong>
+                <strong>Date déchéance </strong>
                 {formatDate(invoice.dueDate)}
               </p>
             </div>

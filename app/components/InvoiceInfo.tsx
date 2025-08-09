@@ -74,7 +74,7 @@ const InvoiceInfo: React.FC<Props> = ({ invoice, setInvoice }) => {
           onChange={(e) => handleInputChange(e, "invoiceDate")}
         />
 
-        <h2 className="badge badge-accent">Date d'échéance</h2>
+        <h2 className="badge badge-accent">Date déchéance</h2>
         <input
           type="date"
           value={invoice?.dueDate}
