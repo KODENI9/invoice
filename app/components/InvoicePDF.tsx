@@ -3,6 +3,7 @@ import confetti from "canvas-confetti";
 import html2canvas from "html2canvas-pro";
 import jsPDF from "jspdf";
 import { ArrowDownFromLine, Layers } from "lucide-react";
+import Image from "next/image";
 import React, { useRef } from "react";
 
 interface FacturePDFProps {
@@ -179,10 +180,12 @@ const InvoicePDF: React.FC<FacturePDFProps> = ({ invoice, totals }) => {
                   <p className="text-sm font-bold italic">
                     Par {invoice.issuerName}
                   </p>
-                  <img
+                  <Image
                     src={invoice.signature}
                     alt="Signature"
                     className="w-48" // plus de border ni rounded
+                    width={100}
+                    height={100}
                   />
                 </div>
               </div>

@@ -97,7 +97,7 @@ const InvoiceInfo: React.FC<Props> = ({ invoice, setInvoice }) => {
             }
           }}
           canvasProps={{
-            width: 350,
+            width: 320,
             height: 200,
             className: "border border-gray-400 rounded",
           }}

@@ -8,7 +8,7 @@ import Wrapper from "@/app/components/Wrapper";
 import { Invoice, Totals } from "@/type";
 import { Save, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 const page = ({ params }: { params: { invoiceId: string } }) => {
 
@@ -19,7 +19,7 @@ const page = ({ params }: { params: { invoiceId: string } }) => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   
-  const fetchInvoice = async () => {
+  const fetchInvoice = useCallback(async () => {
     try {
       const { invoiceId } = await params;
       const fetchedInvoice = await getInvoiceById(invoiceId);
@@ -30,7 +30,8 @@ const page = ({ params }: { params: { invoiceId: string } }) => {
     } catch (error) {
       console.error(error);
     }
-  };
+  }, []);
+
 
     useEffect(() => {
     setIsSaveDisabled(
@@ -80,7 +81,7 @@ const page = ({ params }: { params: { invoiceId: string } }) => {
 
   useEffect(() => {
     fetchInvoice();
-  }, []);
+  }, [fetchInvoice]);
 
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newStatus = parseInt(e.target.value)
