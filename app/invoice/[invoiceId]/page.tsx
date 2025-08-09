@@ -11,8 +11,11 @@ import { Save, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
 
-// ⚠️ On supprime notre type PageProps et on tape juste `any` pour éviter le conflit
-export default function Page({ params }: { params: { invoiceId: string } }) {
+export default function Page(props: any) {
+  // On récupère params sans typer strictement
+  const { params } = props;
+  const invoiceId: string = params.invoiceId;
+
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [initialInvoice, setInitialInvoice] = useState<Invoice | null>(null);
   const [totals, setTotals] = useState<Totals | null>(null);
@@ -22,7 +25,6 @@ export default function Page({ params }: { params: { invoiceId: string } }) {
 
   const fetchInvoice = useCallback(async () => {
     try {
-      const { invoiceId } = params;
       const fetchedInvoice = await getInvoiceById(invoiceId);
       if (fetchedInvoice) {
         setInvoice(fetchedInvoice);
@@ -31,7 +33,7 @@ export default function Page({ params }: { params: { invoiceId: string } }) {
     } catch (error) {
       console.error(error);
     }
-  }, [params]);
+  }, [invoiceId]);
 
   useEffect(() => {
     setIsSaveDisabled(
