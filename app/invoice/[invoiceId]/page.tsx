@@ -1,4 +1,5 @@
 "use client";
+
 import { deleteInvoice, getInvoiceById, updateInvoice } from "@/app/action";
 import InvoiceInfo from "@/app/components/InvoiceInfo";
 import InvoiceLines from "@/app/components/InvoiceLines";
@@ -10,13 +11,13 @@ import { Save, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
 
-type PageProps = {
+interface PageProps {
   params: {
     invoiceId: string;
   };
-};
+}
 
-const Page = ({ params }: PageProps) => {
+export default function Page({ params }: PageProps) {
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [initialInvoice, setInitialInvoice] = useState<Invoice | null>(null);
   const [totals, setTotals] = useState<Totals | null>(null);
@@ -26,7 +27,7 @@ const Page = ({ params }: PageProps) => {
 
   const fetchInvoice = useCallback(async () => {
     try {
-      const { invoiceId } = params; // ✅ plus de await
+      const { invoiceId } = params;
       const fetchedInvoice = await getInvoiceById(invoiceId);
       if (fetchedInvoice) {
         setInvoice(fetchedInvoice);
@@ -35,7 +36,7 @@ const Page = ({ params }: PageProps) => {
     } catch (error) {
       console.error(error);
     }
-  }, [params]); // ✅ ajout de params comme dépendance
+  }, [params]);
 
   useEffect(() => {
     setIsSaveDisabled(
@@ -53,9 +54,10 @@ const Page = ({ params }: PageProps) => {
         setInvoice(updatedInvoice);
         setInitialInvoice(updatedInvoice);
       }
-      setIsLoading(false);
     } catch (error) {
-      console.error("Erreur lors de la sauvegarde de la facture :", error);
+      console.error("Erreur lors de la sauvegarde :", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -63,13 +65,12 @@ const Page = ({ params }: PageProps) => {
     const confirmed = window.confirm(
       "Êtes-vous sûr de vouloir supprimer cette facture ?"
     );
-
-    if (confirmed) {
+    if (confirmed && invoice) {
       try {
-        await deleteInvoice(invoice?.id as string);
+        await deleteInvoice(invoice.id);
         router.push("/");
       } catch (error) {
-        console.error("Erreur lors de la suppression de la facture.", error);
+        console.error("Erreur lors de la suppression :", error);
       }
     }
   };
@@ -86,23 +87,21 @@ const Page = ({ params }: PageProps) => {
 
   useEffect(() => {
     fetchInvoice();
-  }, [fetchInvoice]); // ✅ pas besoin de désactiver eslint maintenant
+  }, [fetchInvoice]);
 
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newStatus = parseInt(e.target.value);
     if (invoice) {
-      const updatedInvoice = { ...invoice, status: newStatus };
-      setInvoice(updatedInvoice);
+      setInvoice({ ...invoice, status: parseInt(e.target.value) });
     }
   };
 
-  if (!invoice || !totals)
+  if (!invoice || !totals) {
     return (
-      <div className="flex justify-center items-center h-screen w-full ">
+      <div className="flex justify-center items-center h-screen w-full">
         <span className="font-bold">Facture Non Trouvée</span>
       </div>
     );
-    
+  }
   return (
     <Wrapper>
       <div>
@@ -186,4 +185,3 @@ const Page = ({ params }: PageProps) => {
   );
 };
 
-export default Page;
