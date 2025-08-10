@@ -89,19 +89,30 @@ export async function createEmptyInvoice(email: string, name: string) {
   }
 }
 
-async function getInvoiceLines(invoiceId: string) {
+export async function getInvoiceLines(invoiceId: string): Promise<InvoiceLine[]> {
   const linesRef = collection(db, "invoices", invoiceId, "lines");
   const linesSnapshot = await getDocs(linesRef);
 
   if (linesSnapshot.empty) {
-    return []; // Pas de lignes, on retourne tableau vide
+    return [];
   }
 
-  // Retourne un tableau d’objets ligne
-  return linesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  // On cast chaque doc.data() en InvoiceLine sans l'id, puis on ajoute id manuellement
+  return linesSnapshot.docs.map(doc => {
+    const data = doc.data() as Omit<InvoiceLine, "id">;
+
+    // Optionnel : tu peux vérifier que data contient bien les propriétés nécessaires
+    return {
+      id: doc.id,
+      description: data.description ?? "",
+      quantity: data.quantity ?? 0,
+      unitPrice: data.unitPrice ?? 0,
+      invoiceId: invoiceId, // facultatif selon ton interface
+    };
+  });
 }
 
-export async function getInvoicesByEmail(email: string) {
+export async function getInvoicesByEmail(email: string): Promise<Invoice[]> {
   if (!email) return [];
 
   try {
@@ -124,28 +135,47 @@ export async function getInvoicesByEmail(email: string) {
     const invoicesSnapshot = await getDocs(invoicesQuery);
 
     const today = new Date();
-    const invoices = [];
+    const invoices: Invoice[] = [];
 
     for (const invoiceDoc of invoicesSnapshot.docs) {
       const invoiceData = invoiceDoc.data();
 
-      // Date échéance
-      const dueDate = invoiceData.dueDate ? new Date(invoiceData.dueDate) : null;
+      // Convertir dueDate en string ISO ou null
+      const dueDateRaw = invoiceData.dueDate ? new Date(invoiceData.dueDate) : null;
+      const dueDateStr = dueDateRaw ? dueDateRaw.toISOString() : "";
+
+      // Convertir invoiceDate en string ISO ou ""
+      const invoiceDateRaw = invoiceData.invoiceDate ? new Date(invoiceData.invoiceDate) : null;
+      const invoiceDateStr = invoiceDateRaw ? invoiceDateRaw.toISOString() : "";
 
       // Mise à jour statut si en retard et statut = 2
-      if (dueDate && dueDate < today && invoiceData.status === 2) {
+      if (dueDateRaw && dueDateRaw < today && invoiceData.status === 2) {
         await updateDoc(doc(db, "invoices", invoiceDoc.id), { status: 5 });
         invoiceData.status = 5;
       }
 
-      // Récupérer lignes
-      const lines = await getInvoiceLines(invoiceDoc.id);
+      // Récupérer lignes (InvoiceLine[])
+      const lines: InvoiceLine[] = await getInvoiceLines(invoiceDoc.id);
 
-      invoices.push({
+      // Construire l'objet Invoice complet avec fallback si besoin
+      const invoice: Invoice = {
         id: invoiceDoc.id,
-        ...invoiceData,
-        lines: lines,  // ajoute les lignes ou [] si aucune
-      });
+        name: invoiceData.name ?? "",
+        issuerName: invoiceData.issuerName ?? "",
+        issuerAddress: invoiceData.issuerAddress ?? "",
+        clientName: invoiceData.clientName ?? "",
+        clientAddress: invoiceData.clientAddress ?? "",
+        invoiceDate: invoiceDateStr,
+        dueDate: dueDateStr,
+        vatActive: invoiceData.vatActive ?? false,
+        vatRate: invoiceData.vatRate ?? 0,
+        status: invoiceData.status ?? 1,
+        userId: invoiceData.userId ?? userId,
+        lines: lines || [],
+        signature: invoiceData.signature ?? undefined,
+      };
+
+      invoices.push(invoice);
     }
 
     return invoices;
@@ -154,7 +184,6 @@ export async function getInvoicesByEmail(email: string) {
     return [];
   }
 }
-
 
 export async function getInvoiceById(invoiceId: string): Promise<Invoice | null> {
   try {
