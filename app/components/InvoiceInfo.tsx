@@ -99,28 +99,33 @@ const InvoiceInfo: React.FC<Props> = ({ invoice, setInvoice }) => {
 
         <h2 className="badge badge-accent"> Signature</h2>
         <SignatureCanvas
-          ref={sigCanvas}
-          penColor="black"
-          onEnd={async () => {
-            if (!sigCanvas.current || !invoice) return;
- 
-            const dataURL = sigCanvas.current
-              .getTrimmedCanvas()
-              .toDataURL("image/png", 0.5);
+  ref={sigCanvas}
+  penColor="black"
+  onEnd={async () => {
+    if (!sigCanvas.current || !invoice) return;
 
-            setInvoice((prev) =>
-              prev ? { ...prev, signature: dataURL } : prev
-            );
+    // Récupérer le canvas brut
+    const canvas = sigCanvas.current.getCanvas();
 
-            const docRef = doc(db, "invoices", invoice.id);
-            await updateDoc(docRef, { signature: dataURL });
-          }}
-          canvasProps={{
-            width: 320,
-            height: 200,
-            className: "border border-gray-400 rounded",
-          }}
-        />
+    // Conversion en DataURL (compression possible avec 0.5 pour alléger)
+    const dataURL = canvas.toDataURL("image/png", 0.5);
+
+    // Mise à jour en local
+    setInvoice((prev) =>
+      prev ? { ...prev, signature: dataURL } : prev
+    );
+
+    // Sauvegarde Firestore
+    const docRef = doc(db, "invoices", invoice.id);
+    await updateDoc(docRef, { signature: dataURL });
+  }}
+  canvasProps={{
+    width: 320,
+    height: 200,
+    className: "border border-gray-400 rounded",
+  }}
+/>
+
         <div className="flex gap-2 mt-2">
           <button
             className="btn btn-sm btn-accent"
