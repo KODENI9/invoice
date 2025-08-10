@@ -48,17 +48,9 @@ const MySignaturePad: React.FC<SignatureProps> = ({ value, onChange }) => {
         ref={canvasRef}
         width={320}
         height={200}
-        className="border border-gray-400 rounded"
+        className="border border-gray-400 border-dashed rounded-xl"
       />
-      <div className="mt-2 flex gap-2">
-        <button
-          type="button"
-          className="btn btn-sm btn-accent"
-          onClick={clear}
-        >
-          Effacer
-        </button>
-      </div>
+      
     </div>
   );
 };

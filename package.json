@@ -17,7 +17,6 @@
     "next": "15.4.6",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "react-signature-canvas": "^1.1.0-alpha.2",
     "signature_pad": "^5.0.10",
     "trim-canvas": "^0.1.2"
   },
