@@ -1,34 +1,48 @@
 "use client";
 
-import { deleteInvoice, getInvoiceById, updateInvoice } from "@/app/action";
+import { useRouter } from "next/navigation";
+import React, { useCallback, useEffect, useState } from "react";
+import { Invoice, Totals } from "@/type";
+import {
+  deleteInvoice,
+  getInvoiceById,
+  updateInvoice,
+} from "@/app/action";
 import InvoiceInfo from "@/app/components/InvoiceInfo";
 import InvoiceLines from "@/app/components/InvoiceLines";
 import InvoicePDF from "@/app/components/InvoicePDF";
 import VATControl from "@/app/components/VATControl";
 import Wrapper from "@/app/components/Wrapper";
-import { Invoice, Totals } from "@/type";
 import { Save, Trash } from "lucide-react";
-import { useRouter } from "next/navigation";
-import React, { useCallback, useEffect, useState } from "react";
 
-// Définition précise des props attendues
 interface PageProps {
-  params: {
-    invoiceId: string;
-  };
+  params: Promise<{ invoiceId: string }>;
 }
 
-export default function Page({ params }: PageProps) {
-  const invoiceId = params.invoiceId;
+export default function Page(props: PageProps) {
+  const router = useRouter();
+
+  // En attendant le paramètre (async)
+  const [params, setParams] = React.useState<{ invoiceId: string } | null>(null);
+
+  React.useEffect(() => {
+    async function resolveParams() {
+      const awaitedParams = await props.params;
+      setParams(awaitedParams);
+    }
+    resolveParams();
+  }, [props.params]);
+
+  const invoiceId = params?.invoiceId;
 
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [initialInvoice, setInitialInvoice] = useState<Invoice | null>(null);
   const [totals, setTotals] = useState<Totals | null>(null);
   const [isSaveDisabled, setIsSaveDisabled] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
 
   const fetchInvoice = useCallback(async () => {
+    if (!invoiceId) return;
     try {
       const fetchedInvoice = await getInvoiceById(invoiceId);
       if (fetchedInvoice) {
@@ -97,7 +111,7 @@ export default function Page({ params }: PageProps) {
     }
   };
 
-  if (!invoice || !totals) {
+  if (!params || !invoice || !totals) {
     return (
       <div className="flex justify-center items-center h-screen w-full">
         <span className="font-bold">Facture Non Trouvée</span>
