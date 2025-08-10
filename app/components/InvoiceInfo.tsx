@@ -97,13 +97,13 @@ const InvoiceInfo: React.FC<Props> = ({ invoice, setInvoice }) => {
           onChange={(e) => handleInputChange(e, "dueDate")}
         />
 
-        <h2 className="badge badge-accent">Signature</h2>
+        <h2 className="badge badge-accent"> Signature</h2>
         <SignatureCanvas
           ref={sigCanvas}
           penColor="black"
           onEnd={async () => {
             if (!sigCanvas.current || !invoice) return;
-
+ 
             const dataURL = sigCanvas.current
               .getTrimmedCanvas()
               .toDataURL("image/png", 0.5);
