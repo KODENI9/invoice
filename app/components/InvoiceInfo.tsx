@@ -3,8 +3,8 @@
 import { db } from "@/lib/firebase";
 import { Invoice } from "@/type";
 import { doc, updateDoc } from "firebase/firestore";
-import React, { useRef } from "react";
-import SignatureCanvas from "react-signature-canvas";
+import React from "react";
+import MySignaturePad from "./SignaturePad";
 
 interface Props {
   invoice: Invoice | null;
@@ -12,20 +12,16 @@ interface Props {
 }
 
 const InvoiceInfo: React.FC<Props> = ({ invoice, setInvoice }) => {
-  const sigCanvas = useRef<SignatureCanvas>(null);
-
   const handleInputChange = async (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     field: keyof Invoice
   ) => {
-    if (!invoice) return; // Sécurité si invoice est null
+    if (!invoice) return;
 
     const value = e.target.value;
 
     // Rendu instantané
-    setInvoice((prev) =>
-      prev ? { ...prev, [field]: value } : prev
-    );
+    setInvoice((prev) => (prev ? { ...prev, [field]: value } : prev));
 
     // Sauvegarde Firestore
     const docRef = doc(db, "invoices", invoice.id);
@@ -35,16 +31,13 @@ const InvoiceInfo: React.FC<Props> = ({ invoice, setInvoice }) => {
   const clearSignature = async () => {
     if (!invoice) return;
 
-    sigCanvas.current?.clear();
-    setInvoice((prev) =>
-      prev ? { ...prev, signature: "" } : prev
-    );
+    setInvoice((prev) => (prev ? { ...prev, signature: "" } : prev));
 
     const docRef = doc(db, "invoices", invoice.id);
     await updateDoc(docRef, { signature: "" });
   };
 
-  if (!invoice) return null; // Sécurité : si pas de facture
+  if (!invoice) return null;
 
   return (
     <div className="flex flex-col h-fit bg-base-200 p-5 rounded-xl mb-4 md:mb-0">
@@ -97,40 +90,20 @@ const InvoiceInfo: React.FC<Props> = ({ invoice, setInvoice }) => {
           onChange={(e) => handleInputChange(e, "dueDate")}
         />
 
-        <h2 className="badge badge-accent"> Signature</h2>
-        <SignatureCanvas
-  ref={sigCanvas}
-  penColor="black"
-  onEnd={async () => {
-    if (!sigCanvas.current || !invoice) return;
-
-    // Récupérer le canvas brut
-    const canvas = sigCanvas.current.getCanvas();
-
-    // Conversion en DataURL (compression possible avec 0.5 pour alléger)
-    const dataURL = canvas.toDataURL("image/png", 0.5);
-
-    // Mise à jour en local
-    setInvoice((prev) =>
-      prev ? { ...prev, signature: dataURL } : prev
-    );
-
-    // Sauvegarde Firestore
-    const docRef = doc(db, "invoices", invoice.id);
-    await updateDoc(docRef, { signature: dataURL });
-  }}
-  canvasProps={{
-    width: 320,
-    height: 200,
-    className: "border border-gray-400 rounded",
-  }}
-/>
+        <h2 className="badge badge-accent">Signature</h2>
+        <MySignaturePad
+          value={invoice.signature}
+          onChange={async (dataUrl) => {
+            setInvoice((prev) =>
+              prev ? { ...prev, signature: dataUrl } : prev
+            );
+            const docRef = doc(db, "invoices", invoice.id);
+            await updateDoc(docRef, { signature: dataUrl });
+          }}
+        />
 
         <div className="flex gap-2 mt-2">
-          <button
-            className="btn btn-sm btn-accent"
-            onClick={clearSignature}
-          >
+          <button className="btn btn-sm btn-accent" onClick={clearSignature}>
             Effacer
           </button>
         </div>
