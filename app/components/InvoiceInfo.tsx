@@ -15,16 +15,16 @@ const InvoiceInfo: React.FC<Props> = ({ invoice }) => {
   const [localInvoice, setLocalInvoice] = useState<Invoice>(invoice);
   const sigCanvas = useRef<SignatureCanvas>(null);
 
-  // Sync initial seulement
+  // Sync local state avec props
   useEffect(() => {
     setLocalInvoice(invoice);
-  }, [invoice.id]);
+  }, [invoice]); // dépendance corrigée
 
-  const updateField = (field: keyof Invoice, value: any) => {
+  const updateField = <K extends keyof Invoice>(field: K, value: Invoice[K]) => {
     // Rendu instantané
     setLocalInvoice(prev => ({ ...prev, [field]: value }));
 
-    // Sauvegarde Firestore (asynchrone)
+    // Sauvegarde Firestore
     const docRef = doc(db, "invoices", invoice.id);
     updateDoc(docRef, { [field]: value }).catch(console.error);
   };
@@ -34,7 +34,6 @@ const InvoiceInfo: React.FC<Props> = ({ invoice }) => {
       const dataURL = sigCanvas.current
         .getTrimmedCanvas()
         .toDataURL("image/png", 0.4); // compression
-
       updateField("signature", dataURL);
     }
   };
@@ -87,7 +86,7 @@ const InvoiceInfo: React.FC<Props> = ({ invoice }) => {
           onChange={e => updateField("invoiceDate", e.target.value)}
         />
 
-        <h2 className="badge badge-accent">Date d échéance</h2>
+        <h2 className="badge badge-accent">Date d'échéance</h2>
         <input
           type="date"
           value={localInvoice.dueDate}
@@ -108,7 +107,11 @@ const InvoiceInfo: React.FC<Props> = ({ invoice }) => {
           }}
         />
         <div className="flex gap-2 mt-2">
-          <button className="btn btn-sm btn-accent" onClick={clearSignature}>
+          <button
+            type="button"
+            className="btn btn-sm btn-accent"
+            onClick={clearSignature}
+          >
             Effacer
           </button>
         </div>
