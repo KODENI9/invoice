@@ -1,6 +1,8 @@
 "use client";
 
+import { db } from "@/lib/firebase";
 import { Invoice } from "@/type";
+import { doc, updateDoc } from "firebase/firestore";
 import React, { useRef } from "react";
 import SignatureCanvas from "react-signature-canvas";
 
@@ -10,13 +12,17 @@ interface Props {
 }
 
 const InvoiceInfo: React.FC<Props> = ({ invoice, setInvoice }) => {
-  const handleInputChange = (
+  const handleInputChange = async (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     field: string
   ) => {
-    setInvoice({ ...invoice, [field]: e.target.value });
-  };
+    const newInvoice = { ...invoice, [field]: e.target.value };
+    setInvoice(newInvoice);
 
+    // Sauvegarde dans Firestore
+    const docRef = doc(db, "invoices", invoice.id); // 'invoices' = nom de ta collection
+    await updateDoc(docRef, { [field]: e.target.value });
+  };
   const sigCanvas = useRef<SignatureCanvas>(null);
 
   const clearSignature = () => {
@@ -88,12 +94,17 @@ const InvoiceInfo: React.FC<Props> = ({ invoice, setInvoice }) => {
         <SignatureCanvas
           ref={sigCanvas}
           penColor="black"
-          onEnd={() => {
+          onEnd={async () => {
             if (sigCanvas.current) {
               const dataURL = sigCanvas.current
                 .getTrimmedCanvas()
-                .toDataURL("image/png", 0.5); // compression pour Firestore
+                .toDataURL("image/png", 0.5);
+
               setInvoice({ ...invoice, signature: dataURL });
+
+              // Sauvegarde dans Firestore
+              const docRef = doc(db, "invoices", invoice.id);
+              await updateDoc(docRef, { signature: dataURL });
             }
           }}
           canvasProps={{
