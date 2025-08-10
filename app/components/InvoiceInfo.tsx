@@ -3,103 +3,118 @@
 import { db } from "@/lib/firebase";
 import { Invoice } from "@/type";
 import { doc, updateDoc } from "firebase/firestore";
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef } from "react";
 import SignatureCanvas from "react-signature-canvas";
 
-type Props = {
-  invoice: Invoice;
+interface Props {
+  invoice: Invoice | null;
   setInvoice: React.Dispatch<React.SetStateAction<Invoice | null>>;
-};
+}
 
-const InvoiceInfo: React.FC<Props> = ({ invoice }) => {
-  const [localInvoice, setLocalInvoice] = useState<Invoice>(invoice);
+const InvoiceInfo: React.FC<Props> = ({ invoice, setInvoice }) => {
   const sigCanvas = useRef<SignatureCanvas>(null);
 
-  // Sync local state avec props
-  useEffect(() => {
-    setLocalInvoice(invoice);
-  }, [invoice]); // dépendance corrigée
+  const handleInputChange = async (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    field: keyof Invoice
+  ) => {
+    if (!invoice) return; // Sécurité si invoice est null
 
-  const updateField = <K extends keyof Invoice>(field: K, value: Invoice[K]) => {
+    const value = e.target.value;
+
     // Rendu instantané
-    setLocalInvoice(prev => ({ ...prev, [field]: value }));
+    setInvoice((prev) =>
+      prev ? { ...prev, [field]: value } : prev
+    );
 
     // Sauvegarde Firestore
     const docRef = doc(db, "invoices", invoice.id);
-    updateDoc(docRef, { [field]: value }).catch(console.error);
+    await updateDoc(docRef, { [field]: value });
   };
 
-  const saveSignature = () => {
-    if (sigCanvas.current) {
-      const dataURL = sigCanvas.current
-        .getTrimmedCanvas()
-        .toDataURL("image/png", 0.4); // compression
-      updateField("signature", dataURL);
-    }
-  };
+  const clearSignature = async () => {
+    if (!invoice) return;
 
-  const clearSignature = () => {
     sigCanvas.current?.clear();
-    updateField("signature", "");
+    setInvoice((prev) =>
+      prev ? { ...prev, signature: "" } : prev
+    );
+
+    const docRef = doc(db, "invoices", invoice.id);
+    await updateDoc(docRef, { signature: "" });
   };
+
+  if (!invoice) return null; // Sécurité : si pas de facture
 
   return (
-    <div className="flex flex-col h-fit bg-base-200 p-5 rounded-xl mb-4">
+    <div className="flex flex-col h-fit bg-base-200 p-5 rounded-xl mb-4 md:mb-0">
       <div className="space-y-4">
         <h2 className="badge badge-accent">Émetteur</h2>
         <input
           type="text"
-          value={localInvoice.issuerName}
+          value={invoice.issuerName}
           placeholder="Nom de l'entreprise émettrice"
           className="input input-bordered w-full"
-          onChange={e => updateField("issuerName", e.target.value)}
+          onChange={(e) => handleInputChange(e, "issuerName")}
         />
 
         <textarea
-          value={localInvoice.issuerAddress}
+          value={invoice.issuerAddress}
           placeholder="Adresse de l'entreprise émettrice"
           className="textarea textarea-bordered w-full h-40"
-          onChange={e => updateField("issuerAddress", e.target.value)}
+          onChange={(e) => handleInputChange(e, "issuerAddress")}
         />
 
         <h2 className="badge badge-accent">Client</h2>
         <input
           type="text"
-          value={localInvoice.clientName}
+          value={invoice.clientName}
           placeholder="Nom de l'entreprise cliente"
           className="input input-bordered w-full"
-          onChange={e => updateField("clientName", e.target.value)}
+          onChange={(e) => handleInputChange(e, "clientName")}
         />
 
         <textarea
-          value={localInvoice.clientAddress}
+          value={invoice.clientAddress}
           placeholder="Adresse de l'entreprise cliente"
           className="textarea textarea-bordered w-full h-40"
-          onChange={e => updateField("clientAddress", e.target.value)}
+          onChange={(e) => handleInputChange(e, "clientAddress")}
         />
 
         <h2 className="badge badge-accent">Date de la Facture</h2>
         <input
           type="date"
-          value={localInvoice.invoiceDate}
+          value={invoice.invoiceDate}
           className="input input-bordered w-full"
-          onChange={e => updateField("invoiceDate", e.target.value)}
+          onChange={(e) => handleInputChange(e, "invoiceDate")}
         />
 
-        <h2 className="badge badge-accent">Date d échéance</h2>
+        <h2 className="badge badge-accent">Date déchéance</h2>
         <input
           type="date"
-          value={localInvoice.dueDate}
+          value={invoice.dueDate}
           className="input input-bordered w-full"
-          onChange={e => updateField("dueDate", e.target.value)}
+          onChange={(e) => handleInputChange(e, "dueDate")}
         />
 
-        {/* Signature */}
         <h2 className="badge badge-accent">Signature</h2>
         <SignatureCanvas
           ref={sigCanvas}
           penColor="black"
-          onEnd={saveSignature}
+          onEnd={async () => {
+            if (!sigCanvas.current || !invoice) return;
+
+            const dataURL = sigCanvas.current
+              .getTrimmedCanvas()
+              .toDataURL("image/png", 0.5);
+
+            setInvoice((prev) =>
+              prev ? { ...prev, signature: dataURL } : prev
+            );
+
+            const docRef = doc(db, "invoices", invoice.id);
+            await updateDoc(docRef, { signature: dataURL });
+          }}
           canvasProps={{
             width: 320,
             height: 200,
@@ -108,7 +123,6 @@ const InvoiceInfo: React.FC<Props> = ({ invoice }) => {
         />
         <div className="flex gap-2 mt-2">
           <button
-            type="button"
             className="btn btn-sm btn-accent"
             onClick={clearSignature}
           >
