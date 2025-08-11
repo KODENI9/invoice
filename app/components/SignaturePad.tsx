@@ -50,7 +50,7 @@ const MySignaturePad: React.FC<SignatureProps> = ({ value, onChange }) => {
         height={200}
         className="border border-gray-400 border-dashed rounded-xl"
       />
-      
+      <p>ca ne focntionne pas pour le moment </p>
     </div>
   );
 };
