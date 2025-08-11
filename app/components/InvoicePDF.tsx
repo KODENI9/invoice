@@ -74,22 +74,24 @@ const InvoicePDF: React.FC<FacturePDFProps> = ({ invoice, totals }) => {
   };
 
   return (
-    <div className="mt-4 hidden lg:block">
-      <div className="border-base-300 border-2 border-dashed rounded-xl p-5">
-        <button
-          onClick={handleDownloadPdf}
-          className="btn btn-sm btn-accent mb4"
-        >
-          Facture PDF
-          <ArrowDownFromLine className="w-4" />
-        </button>
+    <div className="mt-4">
+      {/* Bouton toujours visible */}
+      <button
+        onClick={handleDownloadPdf}
+        className="btn btn-sm btn-accent mb-4"
+      >
+        Facture PDF
+        <ArrowDownFromLine className="w-4" />
+      </button>
 
+      {/* Aperçu de la facture uniquement sur écrans larges */}
+      <div className="hidden lg:block border-base-300 border-2 border-dashed rounded-xl p-5">
         <div className="p-8" ref={factureRef}>
           <div className="flex justify-between items-center text-sm">
             <div className="flex flex-col">
               <div>
                 <div className="flex items-center">
-                  <div className="bg-accent-content text-accent  rounded-full p-2">
+                  <div className="bg-accent-content text-accent rounded-full p-2">
                     <Layers className="h-6 w-6" />
                   </div>
                   <span className="ml-3 font-bold text-2xl italic">
@@ -183,7 +185,7 @@ const InvoicePDF: React.FC<FacturePDFProps> = ({ invoice, totals }) => {
                   <Image
                     src={invoice.signature}
                     alt="Signature"
-                    className="w-48" // plus de border ni rounded
+                    className="w-48"
                     width={100}
                     height={100}
                   />
